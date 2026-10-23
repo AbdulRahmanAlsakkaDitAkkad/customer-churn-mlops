@@ -1,0 +1,49 @@
+"""Automated tests for the FastAPI application."""
+
+from fastapi.testclient import TestClient
+
+from customer_churn_mlops.api import app
+
+
+client = TestClient(app)
+
+
+def test_health_check():
+    """Verify that the health endpoint returns a successful response."""
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "healthy"}
+
+
+def test_predict_churn():
+    """Verify that the prediction endpoint returns valid results."""
+    customer = {
+        "gender": "Female",
+        "SeniorCitizen": 0,
+        "Partner": "Yes",
+        "Dependents": "No",
+        "tenure": 2,
+        "PhoneService": "Yes",
+        "MultipleLines": "No",
+        "InternetService": "Fiber optic",
+        "OnlineSecurity": "No",
+        "OnlineBackup": "No",
+        "DeviceProtection": "No",
+        "TechSupport": "No",
+        "StreamingTV": "No",
+        "StreamingMovies": "No",
+        "Contract": "Month-to-month",
+        "PaperlessBilling": "Yes",
+        "PaymentMethod": "Electronic check",
+        "MonthlyCharges": 75.5,
+        "TotalCharges": 151.0,
+    }
+
+    response = client.post("/predict", json=customer)
+
+    assert response.status_code == 200
+
+    result = response.json()
+    assert result["churn_prediction"] in [0, 1]
+    assert 0.0 <= result["churn_probability"] <= 1.0
