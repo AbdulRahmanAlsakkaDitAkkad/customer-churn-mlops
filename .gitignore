@@ -9,8 +9,5 @@ wheels/
 # Virtual environments
 .venv
 
-# Raw datasets
-data/raw/
-
 # Trained model artifacts
 models/*.joblib
