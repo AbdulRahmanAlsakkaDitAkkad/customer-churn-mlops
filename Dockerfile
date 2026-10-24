@@ -12,7 +12,9 @@ COPY src/ ./src/
 
 RUN uv sync --frozen --no-dev
 
-COPY models/logistic_regression.joblib ./models/logistic_regression.joblib
+COPY data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv ./data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
+
+RUN uv run python -m customer_churn_mlops.train
 
 ENV PATH="/app/.venv/bin:$PATH"
 
