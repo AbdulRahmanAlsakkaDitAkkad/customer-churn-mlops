@@ -4,6 +4,7 @@
 import pandas as pd
 from pathlib import Path
 import joblib
+import mlflow
 
 from customer_churn_mlops.preprocessing import (
     clean_total_charges,
@@ -23,6 +24,7 @@ from sklearn.metrics import (
 
 DATA_PATH = Path("data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv")
 MODEL_PATH = Path("models/logistic_regression.joblib")
+mlflow.set_experiment("customer-churn-prediction")
 
 
 
@@ -73,13 +75,17 @@ def evaluate_model(model, X_test, y_test) -> dict:
 
 
 if __name__ == "__main__":
-    model, X_test, y_test = train_model()
-    save_model(model)
-    print(f"Model saved to: {MODEL_PATH}")
-    metrics = evaluate_model(model, X_test, y_test)
+    with mlflow.start_run(run_name="logistic-regression-baseline"):
+        model, X_test, y_test = train_model()
+        save_model(model)
+        mlflow.log_artifact(str(MODEL_PATH), artifact_path="model")
+        print(f"Model saved to: {MODEL_PATH}")
+        metrics = evaluate_model(model, X_test, y_test)
+        mlflow.log_metrics(metrics)
+        mlflow.log_params(model.named_steps["classifier"].get_params())
 
-    print("Logistic Regression Evaluation Results")
-    print("--------------------------------------")
+        print("Logistic Regression Evaluation Results")
+        print("--------------------------------------")
 
-    for name, value in metrics.items():
-        print(f"{name}: {value:.4f}")
+        for name, value in metrics.items():
+            print(f"{name}: {value:.4f}")

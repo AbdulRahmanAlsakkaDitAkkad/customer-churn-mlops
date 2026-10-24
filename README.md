@@ -1,11 +1,10 @@
-
 [![CI](https://github.com/AbdulRahmanAlsakkaDitAkkad/customer-churn-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/AbdulRahmanAlsakkaDitAkkad/customer-churn-mlops/actions/workflows/ci.yml)
 
 # Customer Churn Prediction & MLOps Platform
 
 An end-to-end machine learning engineering portfolio project focused on predicting customer churn, identifying churn-related patterns, and building a reproducible machine learning system using modern software engineering and MLOps practices.
 
-> **Project status:** Exploratory data analysis, data preprocessing, model training and comparison, FastAPI prediction endpoints, Docker containerization, automated testing, and GitHub Actions CI completed. Experiment tracking, deployment, and monitoring are planned.
+> **Project status:** Exploratory data analysis, data preprocessing, model training and comparison, FastAPI prediction endpoints, Docker containerization, automated testing, GitHub Actions CI, and MLflow experiment tracking completed. Cloud deployment, monitoring, and additional model explainability are planned.
 
 ## Project Overview
 
@@ -24,6 +23,7 @@ Beyond model development, the project demonstrates practical machine learning en
 - Containerization with Docker
 - Automated testing with pytest
 - Continuous integration using GitHub Actions
+- Experiment tracking with MLflow
 
 ## Dataset
 
@@ -224,7 +224,7 @@ uv sync
 uv run python -m customer_churn_mlops.train
 ```
 
-This creates the trained model artifact required by the API.
+This creates the trained model artifact required by the API and records an MLflow experiment run.
 
 ### 4. Start the FastAPI Server
 
@@ -286,7 +286,7 @@ The tests cover:
 uv run pytest tests/ -v
 ```
 
-**Current test suite:** 11 passing tests, verified locally.
+**Test suite:** 11 passing tests, verified locally before the MLflow integration.
 
 ## Continuous Integration
 
@@ -307,7 +307,116 @@ Training the model during CI ensures that API tests can load the required model 
 
 **Workflow configuration:** [.github/workflows/ci.yml](.github/workflows/ci.yml)
 
-**CI status:** Successfully verified on GitHub Actions.
+**CI status:** Successfully verified on GitHub Actions before the MLflow integration; the updated workflow still needs verification.
+
+## Experiment Tracking with MLflow
+
+MLflow is integrated into the model training workflow to track experiments, evaluation metrics, model hyperparameters, and serialized model artifacts.
+
+Experiment tracking helps maintain reproducibility and provides a structured way to inspect and compare machine learning runs.
+
+### Experiment Configuration
+
+| Property | Value |
+| --- | --- |
+| Tracking tool | MLflow |
+| Experiment name | `customer-churn-prediction` |
+| Run name | `logistic-regression-baseline` |
+| Model | Logistic Regression |
+| Artifact | `logistic_regression.joblib` |
+| Tracking storage | Local MLflow storage |
+
+### Tracked Evaluation Metrics
+
+Each training run records the following metrics:
+
+| Metric | Baseline Result |
+| --- | --- |
+| Accuracy | 0.8055 |
+| Precision | 0.6572 |
+| Recall | 0.5588 |
+| F1 Score | 0.6040 |
+| ROC-AUC | 0.8420 |
+
+### Tracked Hyperparameters
+
+The training workflow records Logistic Regression hyperparameters using:
+
+```python
+mlflow.log_params(
+    model.named_steps["classifier"].get_params()
+)
+```
+
+This includes model configuration values such as regularization strength, solver, maximum iterations, and other classifier parameters.
+
+### Model Artifact Tracking
+
+The trained scikit-learn pipeline is saved using `joblib` and uploaded to the MLflow run as an artifact.
+
+```python
+mlflow.log_artifact(
+    str(MODEL_PATH),
+    artifact_path="model"
+)
+```
+
+This allows the serialized pipeline to be inspected and downloaded from the MLflow interface.
+
+### Run a Tracked Experiment
+
+Execute the training script:
+
+```bash
+uv run python -m customer_churn_mlops.train
+```
+
+The script automatically:
+
+1. Loads and preprocesses the dataset
+2. Trains the Logistic Regression pipeline
+3. Saves the trained model locally
+4. Evaluates model performance
+5. Logs evaluation metrics to MLflow
+6. Logs classifier hyperparameters
+7. Stores the serialized model artifact
+
+### Launch the MLflow Dashboard
+
+Start the MLflow user interface:
+
+```bash
+uv run mlflow ui --host 127.0.0.1 --port 5000
+```
+
+Open:
+
+http://localhost:5000
+
+Select **Model training**, then open the `customer-churn-prediction` experiment to inspect recorded runs.
+
+The dashboard provides access to:
+
+- Experiment history
+- Training run details
+- Evaluation metrics
+- Model hyperparameters
+- Serialized model artifacts
+
+### Local Tracking Storage
+
+MLflow tracking information is stored locally in:
+
+```text
+mlflow.db
+mlruns/
+```
+
+These files and directories are excluded from Git using `.gitignore` because they contain locally generated experiment data.
+
+The MLflow experiment tracking implementation has been tested locally, including successful metric logging and model artifact storage.
+
+**Implementation:** `src/customer_churn_mlops/train.py`
 
 ## Technology Stack
 
@@ -329,6 +438,7 @@ Training the model during CI ensures that API tests can load the required model 
 
 ### MLOps and Software Engineering
 
+- MLflow
 - uv
 - joblib
 - pytest
@@ -375,7 +485,9 @@ customer-churn-mlops/
 ├── Dockerfile
 ├── pyproject.toml
 ├── uv.lock
-└── README.md
+├── README.md
+├── mlflow.db                      # Generated locally, Git-ignored
+└── mlruns/                        # Generated locally, Git-ignored
 ```
 
 ## Development Roadmap
@@ -387,7 +499,8 @@ customer-churn-mlops/
 - [x] Docker containerization
 - [x] Automated testing with pytest
 - [x] GitHub Actions continuous integration
-- [ ] Experiment tracking and model versioning
+- [x] Week 5: MLflow experiment tracking, metrics, parameters, and model artifact logging
+- [ ] Model registry and version management
 - [ ] Cloud deployment
 - [ ] Model monitoring and logging
 - [ ] Additional model explainability
@@ -399,7 +512,7 @@ The roadmap is iterative and may be adjusted as the project develops.
 
 Planned improvements include:
 
-- Experiment tracking with MLflow
+- Model registration and version management using MLflow
 - Additional model evaluation and explainability
 - Cloud deployment of the FastAPI application
 - Prediction logging and monitoring
