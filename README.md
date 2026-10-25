@@ -1,60 +1,102 @@
+
 [![CI](https://github.com/AbdulRahmanAlsakkaDitAkkad/customer-churn-mlops/actions/workflows/ci.yml/badge.svg)](https://github.com/AbdulRahmanAlsakkaDitAkkad/customer-churn-mlops/actions/workflows/ci.yml)
 
 # Customer Churn Prediction & MLOps Platform
 
-An end-to-end machine learning engineering portfolio project focused on predicting customer churn, identifying churn-related patterns, and building a reproducible machine learning system using modern software engineering and MLOps practices.
+An end-to-end machine learning engineering portfolio project that predicts customer churn and demonstrates reproducible ML workflows, backend API development, containerization, experiment tracking, automated testing, and cloud deployment.
 
-> **Project status:** Exploratory data analysis, data preprocessing, model training and comparison, FastAPI prediction endpoints, Docker containerization, automated testing, GitHub Actions CI, and MLflow experiment tracking completed. Cloud deployment, monitoring, and additional model explainability are planned.
+**Project status:** Deployed and operational. Core development, testing, and cloud deployment are complete. Final portfolio documentation and presentation are in progress.
+
+## Live Demo
+
+**Interactive API documentation:**  
+https://customer-churn-mlops-89f8.onrender.com/docs
+
+**Health endpoint:**  
+https://customer-churn-mlops-89f8.onrender.com/health
+
+**GitHub repository:**  
+https://github.com/AbdulRahmanAlsakkaDitAkkad/customer-churn-mlops
+
+The application is deployed as a Docker-based web service on Render.
+
+> **Note:** The service uses Render's free hosting tier, which may spin down during inactivity. The first request after an idle period can take approximately one minute while the service starts.
 
 ## Project Overview
 
 Customer churn prediction helps businesses identify customers who may discontinue their services.
 
-This project uses the IBM Telco Customer Churn dataset to develop a machine learning solution that predicts whether a customer is likely to churn.
+This project uses the IBM Telco Customer Churn dataset to develop a machine learning system that estimates the probability of customer churn.
 
-Beyond model development, the project demonstrates practical machine learning engineering skills, including:
+The project demonstrates practical skills in:
 
 - Exploratory data analysis and data quality assessment
-- Reproducible preprocessing pipelines
+- Data preprocessing and feature engineering
 - Supervised machine learning and model evaluation
 - Model comparison and hyperparameter tuning
-- Model serialization and loading
+- Reproducible scikit-learn pipelines
 - REST API development with FastAPI
-- Containerization with Docker
-- Automated testing with pytest
-- Continuous integration using GitHub Actions
+- API input validation with Pydantic
+- Docker containerization
+- Cloud deployment on Render
 - Experiment tracking with MLflow
+- Automated testing with pytest
+- Code quality enforcement with Ruff
+- Continuous integration using GitHub Actions
+- Prediction logging and latency measurement
+
+## Technology Stack
+
+| Category | Technologies |
+|---|---|
+| Programming | Python 3.12 |
+| Data analysis | pandas, NumPy |
+| Machine learning | scikit-learn |
+| Visualization | Matplotlib, Seaborn |
+| Experiment tracking | MLflow |
+| Backend API | FastAPI, Pydantic, Uvicorn |
+| Testing | pytest, FastAPI TestClient |
+| Code quality | Ruff |
+| Package management | uv |
+| Containerization | Docker |
+| Cloud hosting | Render |
+| CI | GitHub Actions |
+| Development environment | VS Code, Ubuntu on WSL2 |
+| Version control | Git, GitHub |
 
 ## Dataset
 
-**IBM Telco Customer Churn Dataset**
+**Dataset:** IBM Telco Customer Churn
+
+**Source:**  
+https://www.kaggle.com/datasets/blastchar/telco-customer-churn
 
 The dataset contains:
 
 - 7,043 customer records
 - 21 original columns
 - Customer demographics
-- Subscription and internet services
-- Contract and payment information
+- Subscription and internet service information
+- Contract and payment details
 - Customer tenure and charges
 - Customer churn labels
 
-Dataset source: [IBM Telco Customer Churn on Kaggle](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
+The dataset is stored at:
 
-The CSV dataset is stored at:
+```text
+data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
+```
 
-`data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv`
-
-The dataset is included in the repository to support reproducible training in GitHub Actions.
+The CSV file is included in the repository to support reproducible model training, including training in GitHub Actions.
 
 ## Exploratory Data Analysis
 
-The initial exploratory analysis investigated customer behavior, churn distribution, and relationships between customer characteristics and churn.
+The exploratory analysis examined customer characteristics, churn distribution, contract types, payment methods, and customer tenure.
 
 ### Key Findings
 
 | Metric | Finding |
-| --- | --- |
+|---|---|
 | Total customers | 7,043 |
 | Overall churn rate | 26.54% |
 | Month-to-month contract churn | 42.71% |
@@ -65,6 +107,12 @@ The initial exploratory analysis investigated customer behavior, churn distribut
 | Median tenure of churned customers | 10 months |
 | Median tenure of retained customers | 38 months |
 
+Customers with month-to-month contracts showed substantially higher churn rates than customers with longer contracts.
+
+Customers who churned also tended to have shorter tenure.
+
+These findings describe statistical associations and should not be interpreted as causal relationships.
+
 ### Data Quality
 
 The analysis identified 11 missing `TotalCharges` values, all associated with customers with zero tenure.
@@ -73,9 +121,8 @@ These values are handled during preprocessing.
 
 No duplicate customer IDs or fully duplicated rows were identified.
 
-These findings describe associations in the dataset and should not be interpreted as causal relationships.
-
-**EDA notebook:** [01_exploratory_data_analysis.ipynb](notebooks/01_exploratory_data_analysis.ipynb)
+**EDA notebook:**  
+[01_exploratory_data_analysis.ipynb](notebooks/01_exploratory_data_analysis.ipynb)
 
 ## Data Preprocessing
 
@@ -83,23 +130,26 @@ A reusable preprocessing pipeline was implemented using scikit-learn.
 
 The preprocessing workflow includes:
 
-- Conversion of `TotalCharges` to numeric values
-- Handling missing charges for customers with zero tenure
-- Separation of input features and target labels
-- Removal of customer identifiers from model inputs
-- Stratified training and testing split
-- Standardization of numerical features
-- One-hot encoding of categorical features
-- Integration of preprocessing and classification into a single pipeline
+1. Converting `TotalCharges` to numeric values
+2. Handling missing charges for customers with zero tenure
+3. Separating input features and target labels
+4. Removing customer identifiers from model inputs
+5. Performing a stratified train/test split
+6. Standardizing numerical features
+7. One-hot encoding categorical features
+8. Combining preprocessing and classification into one pipeline
 
-The dataset is split into:
+### Train/Test Split
 
-- 80% training data
-- 20% testing data
+| Dataset | Percentage | Records |
+|---|---|---|
+| Training | 80% | 5,634 |
+| Testing | 20% | 1,409 |
 
-A fixed random seed supports reproducible results.
+A fixed random seed (`random_state=42`) supports reproducibility.
 
-**Implementation:** `src/customer_churn_mlops/preprocessing.py`
+**Implementation:**  
+`src/customer_churn_mlops/preprocessing.py`
 
 ## Machine Learning Models
 
@@ -114,42 +164,89 @@ Random Forest hyperparameters were optimized using `RandomizedSearchCV` with cro
 ### Model Comparison
 
 | Model | Accuracy | Precision | Recall | F1 Score | ROC-AUC |
-| --- | --- | --- | --- | --- | --- |
+|---|---|---|---|---|---|
 | Logistic Regression | 0.8055 | 0.6572 | 0.5588 | 0.6040 | 0.8420 |
 | Random Forest | 0.7828 | 0.6118 | 0.4973 | 0.5487 | 0.8219 |
 | Tuned Random Forest | 0.8006 | 0.6632 | 0.5053 | 0.5736 | 0.8406 |
 
 ### Selected Model
 
-**Logistic Regression** was selected as the baseline deployment model.
+**Logistic Regression** was selected for deployment.
 
 It achieved the highest test ROC-AUC and F1 score among the evaluated configurations.
 
 The trained model is serialized using `joblib` and saved to:
 
-`models/logistic_regression.joblib`
+```text
+models/logistic_regression.joblib
+```
 
-The model artifact is generated locally during training and is not committed to Git.
+The model artifact is generated during training and is not committed to Git.
 
-**Training implementation:** `src/customer_churn_mlops/train.py`
+**Training implementation:**  
+`src/customer_churn_mlops/train.py`
 
-**Model comparison implementation:** `src/customer_churn_mlops/compare_models.py`
+**Model comparison implementation:**  
+`src/customer_churn_mlops/compare_models.py`
 
-**Comparison results:** [model_comparison.csv](reports/model_comparison.csv)
+**Comparison results:**  
+[model_comparison.csv](reports/model_comparison.csv)
+
+## System Architecture
+
+The application follows this workflow:
+
+```text
+IBM Telco Customer Churn Dataset
+                |
+                v
+       Data Preprocessing
+                |
+                v
+        Model Training
+                |
+                +------> MLflow Experiment Tracking
+                |
+                v
+      Logistic Regression
+                |
+                v
+       Serialized Pipeline
+                |
+                v
+          FastAPI API
+                |
+                v
+       Pydantic Validation
+                |
+                v
+       Churn Prediction
+                |
+                +------> Prediction Logging
+                |
+                +------> Latency Measurement
+                |
+                v
+          JSON Response
+```
+
+The application is packaged using Docker and deployed on Render.
+
+GitHub Actions runs automated code quality checks and tests when changes are pushed or pull requests are opened.
 
 ## REST API with FastAPI
 
-A REST API was developed using FastAPI to serve customer churn predictions.
+The application exposes a REST API for customer churn predictions.
 
 The API loads the trained machine learning pipeline and accepts customer information as JSON.
 
 ### Available Endpoints
 
 | Method | Endpoint | Description |
-| --- | --- | --- |
+|---|---|---|
 | GET | `/health` | Check API health |
 | POST | `/predict` | Predict customer churn |
-| GET | `/docs` | Interactive Swagger API documentation |
+| GET | `/docs` | Interactive Swagger documentation |
 
 ### Example Prediction Request
 
@@ -186,14 +283,165 @@ The API loads the trained machine learning pipeline and accepts customer informa
 }
 ```
 
-The values above illustrate the response format.
+The response values above are illustrative.
 
-- `churn_prediction`: Binary prediction, where 1 indicates churn and 0 indicates no churn.
-- `churn_probability`: Estimated probability of churn.
+- `churn_prediction`: Binary prediction, where `1` indicates churn and `0` indicates no churn.
+- `churn_probability`: Estimated probability of churn, between `0` and `1`.
 
-**API implementation:** `src/customer_churn_mlops/api.py`
+### API Input Validation
 
-**Input validation:** `src/customer_churn_mlops/schemas.py`
+Pydantic validates incoming requests before predictions are generated.
+
+Implemented numerical constraints include:
+
+| Field | Validation |
+|---|---|
+| `SeniorCitizen` | Integer between 0 and 1 |
+| `tenure` | Integer between 0 and 72 |
+| `MonthlyCharges` | Non-negative number |
+| `TotalCharges` | Non-negative number |
+
+Missing required fields and invalid numerical values return HTTP `422 Unprocessable Entity`.
+
+**API implementation:**  
+`src/customer_churn_mlops/api.py`
+
+**Input schemas:**  
+`src/customer_churn_mlops/schemas.py`
+
+## Cloud Deployment
+
+The FastAPI application is deployed on **Render** using Docker.
+
+### Deployment Details
+
+| Property | Value |
+|---|---|
+| Cloud provider | Render |
+| Service | `customer-churn-mlops` |
+| Deployment method | Docker |
+| Application server | Uvicorn |
+| Hosting plan | Free |
+| Public API | [Swagger UI](https://customer-churn-mlops-89f8.onrender.com/docs) |
+| Health check | [Health endpoint](https://customer-churn-mlops-89f8.onrender.com/health) |
+
+The deployed prediction endpoint has been tested successfully with real HTTP requests.
+
+The API returned HTTP `200 OK` and a JSON prediction response.
+
+### Deployment Considerations
+
+The free hosting tier can introduce cold-start delays after periods of inactivity.
+
+The application is intended as a demonstration and portfolio project, not as a production service with guaranteed availability.
+
+## Prediction Logging and Latency Monitoring
+
+The prediction endpoint includes application logging.
+
+For successful predictions, the application records:
+
+- Predicted churn class
+- Estimated churn probability
+- Prediction processing latency in milliseconds
+
+Latency is measured using Python's `time.perf_counter()`.
+
+Example log format:
+
+```text
+Prediction completed: churn_prediction=1, churn_probability=0.7630
+Prediction latency: 401.95 ms
+```
+
+These example values come from a previously tested deployment request.
+
+Application logs can be inspected through the Render service dashboard.
+
+This provides basic operational visibility.
+
+Advanced model performance monitoring, automated drift detection, and alerting are not yet implemented.
+
+## Experiment Tracking with MLflow
+
+MLflow is integrated into the training workflow.
+
+It records:
+
+- Experiment runs
+- Evaluation metrics
+- Classifier hyperparameters
+- Serialized model artifacts
+
+### Experiment Configuration
+
+| Property | Value |
+|---|---|
+| Tracking tool | MLflow |
+| Experiment name | `customer-churn-prediction` |
+| Run name | `logistic-regression-baseline` |
+| Model | Logistic Regression |
+| Model artifact | `logistic_regression.joblib` |
+| Tracking storage | Local MLflow storage |
+
+### Tracked Evaluation Metrics
+
+| Metric | Baseline Result |
+|---|---|
+| Accuracy | 0.8055 |
+| Precision | 0.6572 |
+| Recall | 0.5588 |
+| F1 Score | 0.6040 |
+| ROC-AUC | 0.8420 |
+
+### Hyperparameter Tracking
+
+Classifier hyperparameters are logged using:
+
+```python
+mlflow.log_params(
+    model.named_steps["classifier"].get_params()
+)
+```
+
+### Model Artifact Tracking
+
+The serialized model is logged as an MLflow artifact.
+
+```python
+mlflow.log_artifact(
+    str(MODEL_PATH),
+    artifact_path="model"
+)
+```
+
+### Launch the MLflow Dashboard
+
+Run:
+
+```bash
+uv run mlflow ui --host 127.0.0.1 --port 5000
+```
+
+Open:
+
+http://localhost:5000
+
+Select the `customer-churn-prediction` experiment to inspect the training runs, evaluation metrics, hyperparameters, and model artifacts.
+
+### Local Tracking Storage
+
+MLflow data is stored locally in:
+
+```text
+mlflow.db
+mlruns/
+```
+
+These files and directories are excluded from Git.
+
+**Implementation:**  
+`src/customer_churn_mlops/train.py`
 
 ## Getting Started
 
@@ -203,7 +451,7 @@ The values above illustrate the response format.
 - [uv package manager](https://docs.astral.sh/uv/)
 - Git
 
-Docker is optional for running the containerized application.
+Docker is optional for local containerized execution.
 
 ### 1. Clone the Repository
 
@@ -224,7 +472,7 @@ uv sync
 uv run python -m customer_churn_mlops.train
 ```
 
-This creates the trained model artifact required by the API and records an MLflow experiment run.
+This command trains the Logistic Regression pipeline, saves the model artifact, evaluates its performance, and records an MLflow experiment run.
 
 ### 4. Start the FastAPI Server
 
@@ -232,23 +480,21 @@ This creates the trained model artifact required by the API and records an MLflo
 uv run uvicorn customer_churn_mlops.api:app --reload
 ```
 
-The API will be available at:
+The application is available at:
 
 - API: http://127.0.0.1:8000
-- Interactive documentation: http://127.0.0.1:8000/docs
+- Swagger documentation: http://127.0.0.1:8000/docs
 - Health endpoint: http://127.0.0.1:8000/health
 
 ## Docker Containerization
 
-The application includes a Dockerfile for containerized execution.
-
-The Docker image installs the project dependencies and includes the trained model artifact.
+The project includes a Dockerfile for running the API in a container.
 
 ### Build the Docker Image
 
-First, generate the model locally using the training command above.
+First, train the model locally using the training command above.
 
-Then build the image:
+Then run:
 
 ```bash
 docker build -t customer-churn-api .
@@ -260,7 +506,7 @@ docker build -t customer-churn-api .
 docker run --rm -p 8000:8000 customer-churn-api
 ```
 
-Access the API documentation at:
+Open:
 
 http://localhost:8000/docs
 
@@ -270,15 +516,27 @@ The application runs inside the container using Uvicorn.
 
 Automated tests are implemented using pytest.
 
-The tests cover:
+**Current result: 17 passing tests.**
 
-- Data cleaning and missing-value handling
+### Test Coverage
+
+The test suite covers:
+
+- TotalCharges conversion and missing-value handling
+- Preservation of original data during preprocessing
 - Feature and target separation
-- Reproducible train/test splitting
+- Stratified train/test splitting
+- Reproducible dataset splitting
 - Preprocessing pipeline structure
 - Model pipeline structure
 - FastAPI health endpoint
 - FastAPI prediction endpoint
+- Rejection of missing required fields
+- Rejection of negative tenure
+- Rejection of tenure above 72 months
+- Rejection of negative monthly charges
+- Rejection of negative total charges
+- Rejection of invalid SeniorCitizen values
 
 ### Run All Tests
 
@@ -286,171 +544,83 @@ The tests cover:
 uv run pytest tests/ -v
 ```
 
-**Test suite:** 11 passing tests, verified locally before the MLflow integration.
+Latest verified result:
 
-## Continuous Integration
+```text
+17 passed, 2 warnings
+```
 
-GitHub Actions provides automated continuous integration for the project.
+The two warnings originate from third-party dependency deprecations and do not cause test failures.
 
-The CI workflow runs whenever changes are pushed to the `main` branch or a pull request targets `main`.
+## Code Quality with Ruff
+
+Ruff is used for Python linting and code formatting.
+
+It is installed as a development dependency.
+
+### Check Code Quality
+
+```bash
+uv run ruff check src/ tests/
+```
+
+### Check Formatting
+
+```bash
+uv run ruff format --check src/ tests/
+```
+
+### Automatically Fix Supported Lint Issues
+
+```bash
+uv run ruff check src/ tests/ --fix
+```
+
+### Format Source Code
+
+```bash
+uv run ruff format src/ tests/
+```
+
+Ruff checks have been verified locally.
+
+The linting and formatting checks are also integrated into GitHub Actions.
+
+## Continuous Integration with GitHub Actions
+
+The project uses GitHub Actions to automatically validate changes.
+
+The workflow runs when:
+
+- Changes are pushed to `main`
+- Pull requests target `main`
 
 ### CI Pipeline
 
+The pipeline performs the following operations:
+
 1. Check out the repository
 2. Install uv
-3. Install Python 3.12
+3. Set up Python 3.12
 4. Install project dependencies
-5. Train the machine learning model
-6. Execute automated tests
+5. Check Python code quality with Ruff
+6. Check Python formatting with Ruff
+7. Train the machine learning model
+8. Run the automated test suite
 
-Training the model during CI ensures that API tests can load the required model artifact without committing binary model files to Git.
+The model is trained during CI so API tests can load the required model artifact without committing binary model files to the repository.
 
-**Workflow configuration:** [.github/workflows/ci.yml](.github/workflows/ci.yml)
+### CI Status
 
-**CI status:** Successfully verified on GitHub Actions before the MLflow integration; the updated workflow still needs verification.
+**Latest verified workflow:** CI #10 — Passed
 
-## Experiment Tracking with MLflow
+**Commit:** `326c6a4`
 
-MLflow is integrated into the model training workflow to track experiments, evaluation metrics, model hyperparameters, and serialized model artifacts.
+**Workflow:**  
+[GitHub Actions CI](https://github.com/AbdulRahmanAlsakkaDitAkkad/customer-churn-mlops/actions)
 
-Experiment tracking helps maintain reproducibility and provides a structured way to inspect and compare machine learning runs.
-
-### Experiment Configuration
-
-| Property | Value |
-| --- | --- |
-| Tracking tool | MLflow |
-| Experiment name | `customer-churn-prediction` |
-| Run name | `logistic-regression-baseline` |
-| Model | Logistic Regression |
-| Artifact | `logistic_regression.joblib` |
-| Tracking storage | Local MLflow storage |
-
-### Tracked Evaluation Metrics
-
-Each training run records the following metrics:
-
-| Metric | Baseline Result |
-| --- | --- |
-| Accuracy | 0.8055 |
-| Precision | 0.6572 |
-| Recall | 0.5588 |
-| F1 Score | 0.6040 |
-| ROC-AUC | 0.8420 |
-
-### Tracked Hyperparameters
-
-The training workflow records Logistic Regression hyperparameters using:
-
-```python
-mlflow.log_params(
-    model.named_steps["classifier"].get_params()
-)
-```
-
-This includes model configuration values such as regularization strength, solver, maximum iterations, and other classifier parameters.
-
-### Model Artifact Tracking
-
-The trained scikit-learn pipeline is saved using `joblib` and uploaded to the MLflow run as an artifact.
-
-```python
-mlflow.log_artifact(
-    str(MODEL_PATH),
-    artifact_path="model"
-)
-```
-
-This allows the serialized pipeline to be inspected and downloaded from the MLflow interface.
-
-### Run a Tracked Experiment
-
-Execute the training script:
-
-```bash
-uv run python -m customer_churn_mlops.train
-```
-
-The script automatically:
-
-1. Loads and preprocesses the dataset
-2. Trains the Logistic Regression pipeline
-3. Saves the trained model locally
-4. Evaluates model performance
-5. Logs evaluation metrics to MLflow
-6. Logs classifier hyperparameters
-7. Stores the serialized model artifact
-
-### Launch the MLflow Dashboard
-
-Start the MLflow user interface:
-
-```bash
-uv run mlflow ui --host 127.0.0.1 --port 5000
-```
-
-Open:
-
-http://localhost:5000
-
-Select **Model training**, then open the `customer-churn-prediction` experiment to inspect recorded runs.
-
-The dashboard provides access to:
-
-- Experiment history
-- Training run details
-- Evaluation metrics
-- Model hyperparameters
-- Serialized model artifacts
-
-### Local Tracking Storage
-
-MLflow tracking information is stored locally in:
-
-```text
-mlflow.db
-mlruns/
-```
-
-These files and directories are excluded from Git using `.gitignore` because they contain locally generated experiment data.
-
-The MLflow experiment tracking implementation has been tested locally, including successful metric logging and model artifact storage.
-
-**Implementation:** `src/customer_churn_mlops/train.py`
-
-## Technology Stack
-
-### Machine Learning and Data Analysis
-
-- Python 3.12
-- pandas
-- NumPy
-- scikit-learn
-- Matplotlib
-- Seaborn
-- Jupyter Notebook
-
-### Backend Development
-
-- FastAPI
-- Pydantic
-- Uvicorn
-
-### MLOps and Software Engineering
-
-- MLflow
-- uv
-- joblib
-- pytest
-- Docker
-- Git
-- GitHub
-- GitHub Actions
-
-### Development Environment
-
-- Ubuntu on WSL2
-- Visual Studio Code
+**Configuration:**  
+[.github/workflows/ci.yml](.github/workflows/ci.yml)
 
 ## Project Structure
 
@@ -463,7 +633,7 @@ customer-churn-mlops/
 │   └── raw/
 │       └── WA_Fn-UseC_-Telco-Customer-Churn.csv
 ├── models/
-│   └── logistic_regression.joblib   # Generated locally
+│   └── logistic_regression.joblib  # Generated locally
 ├── notebooks/
 │   └── 01_exploratory_data_analysis.ipynb
 ├── reports/
@@ -486,55 +656,52 @@ customer-churn-mlops/
 ├── pyproject.toml
 ├── uv.lock
 ├── README.md
-├── mlflow.db                      # Generated locally, Git-ignored
-└── mlruns/                        # Generated locally, Git-ignored
+├── mlflow.db                  # Local, Git-ignored
+└── mlruns/                   # Local, Git-ignored
 ```
 
 ## Development Roadmap
 
 - [x] Week 1: Project setup, dataset exploration, and EDA
-- [x] Week 2: Data cleaning, preprocessing, and baseline model training
-- [x] Week 3: Model comparison, hyperparameter tuning, and model persistence
-- [x] REST API development with FastAPI
-- [x] Docker containerization
-- [x] Automated testing with pytest
-- [x] GitHub Actions continuous integration
-- [x] Week 5: MLflow experiment tracking, metrics, parameters, and model artifact logging
-- [ ] Model registry and version management
-- [ ] Cloud deployment
-- [ ] Model monitoring and logging
-- [ ] Additional model explainability
-- [ ] Final portfolio documentation and presentation
-
-The roadmap is iterative and may be adjusted as the project develops.
+- [x] Week 2: Data preprocessing and baseline model training
+- [x] Week 3: Model comparison and hyperparameter tuning
+- [x] Week 4: FastAPI, Docker, automated testing, and GitHub Actions
+- [x] Week 5: MLflow experiment tracking
+- [x] Week 6: Cloud deployment, prediction logging, and latency measurement
+- [x] Week 7: API validation, expanded testing, Ruff, and CI quality checks
+- [ ] Week 8: Final portfolio documentation and project presentation
 
 ## Future Improvements
 
-Planned improvements include:
+Potential future enhancements include:
 
-- Model registration and version management using MLflow
-- Additional model evaluation and explainability
-- Cloud deployment of the FastAPI application
-- Prediction logging and monitoring
-- Model performance and data drift monitoring
-- Improvements to API input validation and error handling
-- Expanded automated testing
-- Continuous delivery and deployment automation
+- MLflow model registry and model version management
+- Additional model explainability using SHAP
+- Automated data drift detection
+- Production model performance monitoring
+- Model calibration analysis
+- More comprehensive categorical input validation
+- Automated deployment workflows
+- Improved operational alerting
+- Additional security and reliability measures
+
+These are future improvements and are not claimed as completed features.
 
 ## Responsible Machine Learning
 
 This project uses historical customer data for educational and portfolio purposes.
 
-Model predictions should not be treated as guaranteed customer outcomes.
+Predictions represent estimated probabilities and should not be treated as guaranteed customer outcomes.
 
-Before real-world deployment, additional evaluation would be necessary, including:
+Before use in a real business environment, additional work would be required, including:
 
 - Data leakage checks
 - Fairness and bias assessment
-- Model calibration and reliability
-- Performance monitoring
-- Data privacy and security
-- Evaluation under changing customer behavior
+- Model calibration and reliability evaluation
+- Data privacy and security review
+- Monitoring for changing customer behavior
+- Model performance monitoring
+- Operational reliability testing
 
 ## License
 
