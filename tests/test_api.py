@@ -69,7 +69,65 @@ def test_predict_negative_tenure():
 
     assert response.status_code == 422
     assert any(
-    error["loc"] == ["body", "tenure"]
-    and error["type"] == "greater_than_equal"
-    for error in response.json()["detail"]
-)
+        error["loc"] == ["body", "tenure"]
+        and error["type"] == "greater_than_equal"
+        for error in response.json()["detail"]
+    )
+
+def test_predict_tenure_above_maximum():
+    """Verify that tenure above 72 months is rejected."""
+    response = client.post(
+        "/predict",
+        json={"tenure": 73},
+    )
+
+    assert response.status_code == 422
+    assert any(
+        error["loc"] == ["body", "tenure"]
+        and error["type"] == "less_than_equal"
+        for error in response.json()["detail"]
+    )
+
+def test_predict_negative_monthly_charges():
+    """Verify that negative monthly charges are rejected."""
+    response = client.post(
+        "/predict",
+        json={"MonthlyCharges": -50},
+    )
+
+    assert response.status_code == 422
+    assert any(
+        error["loc"] == ["body", "MonthlyCharges"]
+        and error["type"] == "greater_than_equal"
+        for error in response.json()["detail"]
+    )
+
+
+def test_predict_negative_total_charges():
+    """Verify that negative total charges are rejected."""
+    response = client.post(
+        "/predict",
+        json={"TotalCharges": -100},
+    )
+
+    assert response.status_code == 422
+    assert any(
+        error["loc"] == ["body", "TotalCharges"]
+        and error["type"] == "greater_than_equal"
+        for error in response.json()["detail"]
+    )
+
+
+def test_predict_invalid_senior_citizen():
+    """Verify that SeniorCitizen values above 1 are rejected."""
+    response = client.post(
+        "/predict",
+        json={"SeniorCitizen": 2},
+    )
+
+    assert response.status_code == 422
+    assert any(
+        error["loc"] == ["body", "SeniorCitizen"]
+        and error["type"] == "less_than_equal"
+        for error in response.json()["detail"]
+    )
