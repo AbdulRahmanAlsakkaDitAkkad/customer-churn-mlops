@@ -1,4 +1,3 @@
-
 """Data preprocessing utilities for customer churn prediction.
 
 This module provides reusable functions for cleaning customer data,
@@ -9,13 +8,11 @@ training set to prevent data leakage.
 """
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
-
-
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 NUMERIC_FEATURES = [
     "tenure",
@@ -59,15 +56,11 @@ def clean_total_charges(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     # New customers with zero tenure have no accumulated charges.
-    zero_tenure_missing = (
-        cleaned_df["tenure"].eq(0)
-        & cleaned_df["TotalCharges"].isna()
-    )
+    zero_tenure_missing = cleaned_df["tenure"].eq(0) & cleaned_df["TotalCharges"].isna()
 
     cleaned_df.loc[zero_tenure_missing, "TotalCharges"] = 0.0
 
     return cleaned_df
-
 
 
 def split_features_target(
@@ -78,7 +71,6 @@ def split_features_target(
     y = df["Churn"].map({"Yes": 1, "No": 0})
 
     return X, y
-
 
 
 def split_train_test(
@@ -95,7 +87,6 @@ def split_train_test(
         random_state=random_state,
         stratify=y,
     )
-
 
 
 def build_preprocessor() -> ColumnTransformer:
@@ -124,7 +115,6 @@ def build_preprocessor() -> ColumnTransformer:
     )
 
     return preprocessor
-
 
 
 def build_model_pipeline() -> Pipeline:

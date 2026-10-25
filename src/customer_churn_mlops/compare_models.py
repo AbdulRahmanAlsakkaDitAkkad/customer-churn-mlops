@@ -1,22 +1,19 @@
-
 """Compare machine learning models for customer churn prediction."""
 
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import RandomizedSearchCV
 from sklearn.pipeline import Pipeline
-import pandas as pd
 
 from customer_churn_mlops.preprocessing import (
-    build_preprocessor,
     build_model_pipeline,
-)
-from customer_churn_mlops.train import (
-    load_data,
-    evaluate_model,
-)
-from customer_churn_mlops.preprocessing import (
+    build_preprocessor,
     split_features_target,
     split_train_test,
+)
+from customer_churn_mlops.train import (
+    evaluate_model,
+    load_data,
 )
 
 RANDOM_FOREST_PARAM_DISTRIBUTIONS = {
@@ -25,7 +22,6 @@ RANDOM_FOREST_PARAM_DISTRIBUTIONS = {
     "classifier__min_samples_split": [2, 5, 10],
     "classifier__min_samples_leaf": [1, 2, 4],
 }
-
 
 
 def build_random_forest_pipeline() -> Pipeline:
@@ -90,7 +86,6 @@ def compare_models():
         "Random Forest": build_random_forest_pipeline(),
     }
 
-    
     results = {}
 
     for name, model in models.items():
@@ -108,11 +103,9 @@ def compare_models():
     return results
 
 
-
-
 if __name__ == "__main__":
     results = compare_models()
-    
+
     comparison_df = pd.DataFrame.from_dict(results, orient="index")
     comparison_df.index.name = "Model"
 

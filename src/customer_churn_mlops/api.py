@@ -1,12 +1,15 @@
 """FastAPI application for customer churn prediction."""
 
 import logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 import time
+
 import joblib
 import pandas as pd
 from fastapi import FastAPI
+
 from customer_churn_mlops.schemas import CustomerInput
 from customer_churn_mlops.train import MODEL_PATH
 
@@ -18,10 +21,12 @@ app = FastAPI(
 
 model = joblib.load(MODEL_PATH)
 
+
 @app.get("/health")
 def health_check():
     """Check whether the API is running."""
     return {"status": "healthy"}
+
 
 @app.post("/predict")
 def predict_churn(customer: CustomerInput):
@@ -32,10 +37,10 @@ def predict_churn(customer: CustomerInput):
     prediction = int(model.predict(customer_df)[0])
     probability = float(model.predict_proba(customer_df)[0, 1])
     logger.info(
-    "Prediction completed: churn_prediction=%s, churn_probability=%.4f",
-    prediction,
-    probability,
-)
+        "Prediction completed: churn_prediction=%s, churn_probability=%.4f",
+        prediction,
+        probability,
+    )
     latency_ms = (time.perf_counter() - start_time) * 1000
     logger.info("Prediction latency: %.2f ms", latency_ms)
 

@@ -1,31 +1,28 @@
-
 """Model training utilities for customer churn prediction."""
 
-import pandas as pd
 from pathlib import Path
+
 import joblib
 import mlflow
+import pandas as pd
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
 
 from customer_churn_mlops.preprocessing import (
+    build_model_pipeline,
     clean_total_charges,
     split_features_target,
     split_train_test,
-    build_model_pipeline,
-)
-
-
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-    roc_auc_score,
 )
 
 DATA_PATH = Path("data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv")
 MODEL_PATH = Path("models/logistic_regression.joblib")
 mlflow.set_experiment("customer-churn-prediction")
-
 
 
 def load_data() -> pd.DataFrame:
@@ -34,7 +31,6 @@ def load_data() -> pd.DataFrame:
     df = clean_total_charges(df)
 
     return df
-
 
 
 def train_model():
@@ -71,7 +67,6 @@ def evaluate_model(model, X_test, y_test) -> dict:
     }
 
     return metrics
-
 
 
 if __name__ == "__main__":

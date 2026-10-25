@@ -1,23 +1,25 @@
-
 """Unit tests for customer churn preprocessing."""
 
 import pandas as pd
+from sklearn.linear_model import LogisticRegression
 
 from customer_churn_mlops.preprocessing import (
+    build_model_pipeline,
+    build_preprocessor,
     clean_total_charges,
     split_features_target,
     split_train_test,
-    build_preprocessor,
-    build_model_pipeline,
 )
-from sklearn.linear_model import LogisticRegression
+
 
 def test_clean_total_charges_converts_strings():
     """Check that TotalCharges strings are converted to numbers."""
-    df = pd.DataFrame({
-        "tenure": [1, 2, 3],
-        "TotalCharges": ["29.85", "188.95", "108.15"],
-    })
+    df = pd.DataFrame(
+        {
+            "tenure": [1, 2, 3],
+            "TotalCharges": ["29.85", "188.95", "108.15"],
+        }
+    )
 
     result = clean_total_charges(df)
 
@@ -25,13 +27,14 @@ def test_clean_total_charges_converts_strings():
     assert result["TotalCharges"].tolist() == [29.85, 188.95, 108.15]
 
 
-
 def test_clean_total_charges_zero_tenure():
     """Check that missing charges are zero for new customers."""
-    df = pd.DataFrame({
-        "tenure": [0, 1, 0],
-        "TotalCharges": [" ", "29.85", " "],
-    })
+    df = pd.DataFrame(
+        {
+            "tenure": [0, 1, 0],
+            "TotalCharges": [" ", "29.85", " "],
+        }
+    )
 
     result = clean_total_charges(df)
 
@@ -39,13 +42,14 @@ def test_clean_total_charges_zero_tenure():
     assert result["TotalCharges"].isna().sum() == 0
 
 
-
 def test_clean_total_charges_preserves_other_missing_values():
     """Keep missing charges when customer tenure is not zero."""
-    df = pd.DataFrame({
-        "tenure": [0, 5, 2],
-        "TotalCharges": [" ", " ", "100.50"],
-    })
+    df = pd.DataFrame(
+        {
+            "tenure": [0, 5, 2],
+            "TotalCharges": [" ", " ", "100.50"],
+        }
+    )
 
     result = clean_total_charges(df)
 
@@ -56,10 +60,12 @@ def test_clean_total_charges_preserves_other_missing_values():
 
 def test_clean_total_charges_does_not_modify_original():
     """Ensure cleaning does not change the original DataFrame."""
-    df = pd.DataFrame({
-        "tenure": [0, 1],
-        "TotalCharges": [" ", "29.85"],
-    })
+    df = pd.DataFrame(
+        {
+            "tenure": [0, 1],
+            "TotalCharges": [" ", "29.85"],
+        }
+    )
 
     original_df = df.copy(deep=True)
 
@@ -71,11 +77,13 @@ def test_clean_total_charges_does_not_modify_original():
 
 def test_split_features_target():
     """Check that features and churn labels are separated correctly."""
-    df = pd.DataFrame({
-        "customerID": ["A001", "A002", "A003"],
-        "tenure": [1, 12, 24],
-        "Churn": ["Yes", "No", "Yes"],
-    })
+    df = pd.DataFrame(
+        {
+            "customerID": ["A001", "A002", "A003"],
+            "tenure": [1, 12, 24],
+            "Churn": ["Yes", "No", "Yes"],
+        }
+    )
 
     X, y = split_features_target(df)
 
@@ -84,7 +92,7 @@ def test_split_features_target():
     assert X.columns.tolist() == ["tenure"]
     assert y.tolist() == [1, 0, 1]
 
-    
+
 def test_split_train_test_preserves_class_distribution():
     """Check train/test sizes and churn class proportions."""
     X = pd.DataFrame({"tenure": range(100)})
@@ -108,7 +116,6 @@ def test_split_train_test_is_reproducible():
     first_split = split_train_test(X, y, random_state=42)
     second_split = split_train_test(X, y, random_state=42)
 
-    
     for first, second in zip(first_split, second_split):
         if isinstance(first, pd.DataFrame):
             pd.testing.assert_frame_equal(first, second)
@@ -116,14 +123,11 @@ def test_split_train_test_is_reproducible():
             pd.testing.assert_series_equal(first, second)
 
 
-
 def test_build_preprocessor_has_expected_transformers():
     """Check that preprocessing includes all three feature groups."""
     preprocessor = build_preprocessor()
 
-    transformer_names = [
-        name for name, _, _ in preprocessor.transformers
-    ]
+    transformer_names = [name for name, _, _ in preprocessor.transformers]
 
     assert transformer_names == [
         "numeric",

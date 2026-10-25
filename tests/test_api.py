@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 
 from customer_churn_mlops.api import app
 
-
 client = TestClient(app)
 
 
@@ -48,6 +47,7 @@ def test_predict_churn():
     assert result["churn_prediction"] in [0, 1]
     assert 0.0 <= result["churn_probability"] <= 1.0
 
+
 def test_predict_missing_fields():
     """Verify that incomplete customer data is rejected."""
     customer = {
@@ -60,6 +60,7 @@ def test_predict_missing_fields():
     assert response.status_code == 422
     assert "detail" in response.json()
 
+
 def test_predict_negative_tenure():
     """Verify that negative tenure is rejected."""
     response = client.post(
@@ -69,10 +70,10 @@ def test_predict_negative_tenure():
 
     assert response.status_code == 422
     assert any(
-        error["loc"] == ["body", "tenure"]
-        and error["type"] == "greater_than_equal"
+        error["loc"] == ["body", "tenure"] and error["type"] == "greater_than_equal"
         for error in response.json()["detail"]
     )
+
 
 def test_predict_tenure_above_maximum():
     """Verify that tenure above 72 months is rejected."""
@@ -83,10 +84,10 @@ def test_predict_tenure_above_maximum():
 
     assert response.status_code == 422
     assert any(
-        error["loc"] == ["body", "tenure"]
-        and error["type"] == "less_than_equal"
+        error["loc"] == ["body", "tenure"] and error["type"] == "less_than_equal"
         for error in response.json()["detail"]
     )
+
 
 def test_predict_negative_monthly_charges():
     """Verify that negative monthly charges are rejected."""
@@ -127,7 +128,6 @@ def test_predict_invalid_senior_citizen():
 
     assert response.status_code == 422
     assert any(
-        error["loc"] == ["body", "SeniorCitizen"]
-        and error["type"] == "less_than_equal"
+        error["loc"] == ["body", "SeniorCitizen"] and error["type"] == "less_than_equal"
         for error in response.json()["detail"]
     )
