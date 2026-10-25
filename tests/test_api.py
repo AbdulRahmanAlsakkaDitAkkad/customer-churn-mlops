@@ -47,3 +47,15 @@ def test_predict_churn():
     result = response.json()
     assert result["churn_prediction"] in [0, 1]
     assert 0.0 <= result["churn_probability"] <= 1.0
+
+def test_predict_missing_fields():
+    """Verify that incomplete customer data is rejected."""
+    customer = {
+        "gender": "Female",
+        "tenure": 2,
+    }
+
+    response = client.post("/predict", json=customer)
+
+    assert response.status_code == 422
+    assert "detail" in response.json()
