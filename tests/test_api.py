@@ -59,3 +59,17 @@ def test_predict_missing_fields():
 
     assert response.status_code == 422
     assert "detail" in response.json()
+
+def test_predict_negative_tenure():
+    """Verify that negative tenure is rejected."""
+    response = client.post(
+        "/predict",
+        json={"tenure": -1},
+    )
+
+    assert response.status_code == 422
+    assert any(
+    error["loc"] == ["body", "tenure"]
+    and error["type"] == "greater_than_equal"
+    for error in response.json()["detail"]
+)
